@@ -1,0 +1,40 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Добавление товара — Skystore{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px;">
+    <h2 class="mb-4 fw-bold text-center">Добавить новый продукт в каталог</h2>
+
+    <div class="card shadow-sm border-0 p-4 bg-white">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %} {# Защита Django от подделки запросов #}
+
+            <div class="mb-3">
+                <label for="name" class="form-label fw-semibold">Название продукта</label>
+                <input type="text" name="name" id="name" class="form-control" placeholder="Например: Сервис автопостинга" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="price" class="form-label fw-semibold">Цена (в рублях)</label>
+                <input type="number" name="price" id="price" class="form-control" placeholder="500" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label fw-semibold">Описание утилиты или кода</label>
+                <textarea name="description" id="description" rows="4" class="form-control" placeholder="Подробно опишите стек и возможности..."></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label for="image" class="form-label fw-semibold">Изображение / Логотип</label>
+                <input type="file" name="image" id="image" class="form-control" accept="image/*">
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg fw-bold">Сохранить продукт</button>
+                <a href="{% url 'catalog:home' %}" class="btn btn-outline-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

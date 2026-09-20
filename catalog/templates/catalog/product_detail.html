@@ -1,0 +1,50 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ product.name }} — Skystore{% endblock %}
+
+{% block content %}
+<div class="container">
+    <a href="{% url 'home' %}" class="btn btn-outline-secondary mb-4">
+        <i class="bi bi-arrow-left"></i> Вернуться в каталог
+    </a>
+
+    <div class="row g-5">
+        <div class="col-md-6">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" class="img-fluid rounded shadow-sm border" alt="{{ product.name }}">
+            {% else %}
+                <div class="bg-white text-center py-5 rounded border shadow-sm text-secondary">
+                    <i class="bi bi-file-earmark-code display-1 text-primary"></i>
+                    <p class="mt-3 mb-0 fw-semibold">Изображение отсутствует</p>
+                </div>
+            {% endif %}
+        </div>
+
+
+        <div class="col-md-6">
+            {% if product.category %}
+                <span class="badge bg-primary px-3 py-2 mb-2 fs-6">{{ product.category }}</span>
+            {% endif %}
+
+            <h1 class="display-5 fw-bold mb-3">{{ product.name }}</h1>
+
+            <div class="mb-4">
+                <span class="fs-2 fw-bold text-success">{{ product.price }} ₽</span>
+            </div>
+
+            <hr class="my-4">
+
+            <h5 class="fw-bold text-dark">Описание продукта:</h5>
+            <p class="lead text-secondary mb-4">
+            </p>
+
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start pt-3">
+                <button class="btn btn-primary btn-lg px-5 shadow-sm fw-bold">
+                    <i class="bi bi-cart-plus me-2"></i>Купить продукт
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
