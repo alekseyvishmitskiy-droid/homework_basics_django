@@ -1,64 +1,65 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.core.paginator import Paginator
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, DetailView, ListView, TemplateView
+
+from catalog.forms import ProductForm
 from catalog.models import Product
 
 
-def home(request):
-    products_list = Product.objects.all().order_by('-id')
+
+class ProductListView(ListView):
+    model = Product
+    template_name = "catalog/home.html"
+    context_object_name = "page_obj"
+    paginate_by = 3
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by("-id")
 
 
-    latest_products = products_list[:5]
-    print("\n--- ПОСЛЕДНИЕ 5 ПРОДУКТОВ В БАЗЕ ДАННЫХ ---")
-    for product in latest_products:
-        print(f"ID: {product.id} | Название: {product.name} | Цена: {product.price}")
-    print("-------------------------------------------\n")
+        latest_products = queryset[:5]
+        print("\n--- ПОСЛЕДНИЕ 5 ПРОДУКТОВ В БАЗЕ ДАННЫХ (CBV) ---")
+        for product in latest_products:
+            print(f"ID: {product.id} | Название: {product.name} | Цена: {product.price}")
+        print("-------------------------------------------------\n")
+
+        return queryset
 
 
-    paginator = Paginator(products_list, 3)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = "catalog/product_detail.html"
+    context_object_name = "product"
 
 
-    return render(request, 'catalog/home.html', {'page_obj': page_obj})
+
+class ProductCreateView(CreateView):
+    model = Product
+    form_class = ProductForm
+    template_name = "catalog/product_form.html"
+    success_url = reverse_lazy("catalog:home")
 
 
-def contacts(request):
-    success_message = None
 
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        phone = request.POST.get('phone')
-        message = request.POST.get('message')
+class ContactsTemplateView(TemplateView):
+    template_name = "catalog/contacts.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["success_message"] = None
+        return context
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+
+
+        name = request.POST.get("name")
+        phone = request.POST.get("phone")
+        message = request.POST.get("message")
 
         print(f"Новая заявка! Имя: {name}, Телефон: {phone}, Сообщение: {message}")
 
-        success_message = "Данные успешно отправлены!"
 
-    return render(request, 'catalog/contacts.html', {'success_message': success_message})
+        context["success_message"] = "Данные успешно отправлены!"
 
-
-def product_detail(request, pk):
-    """Контроллер для отображения детальной страницы одного товара."""
-    product = get_object_or_404(Product, pk=pk)
-
-    return render(request, 'catalog/product_detail.html', {'product': product})
-
-
-def product_create(request):
-    """Контроллер для обработки формы и создания нового товара."""
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        price = request.POST.get('price')
-        description = request.POST.get('description')
-        image = request.FILES.get('image')
-
-
-        Product.objects.create(
-            name=name,
-            price=price,
-            description=description,
-            image=image
-        )
-        return redirect('catalog:home')
-
-    return render(request, 'catalog/product_form.html')
+        return self.render_to_response(context)
