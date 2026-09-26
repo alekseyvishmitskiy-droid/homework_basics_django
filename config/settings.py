@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Загружаем переменные окружения из файла .env в корне проекта
@@ -16,7 +16,7 @@ load_dotenv(BASE_DIR / '.env')
 
 # --- СЕКРЕТНЫЕ НАСТРОЙКИ (Берутся строго из .env) ---
 SECRET_KEY = os.environ.get("SECRET_KEY")
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 ALLOWED_HOSTS = ["*"]
 
 # --- ОПРЕДЕЛЕНИЕ ПРИЛОЖЕНИЙ ---
@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "catalog",
+    "blog",
 ]
 
 # --- ПРОМЕЖУТОЧНОЕ ПО (MIDDLEWARE) ---
@@ -82,7 +83,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # --- ЯЗЫК И ВРЕМЯ ---
-LANGUAGE_CODE = "ru-ru"  # Сделали админку на русском языке
+LANGUAGE_CODE = "ru-ru"
 TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
 USE_TZ = True
@@ -90,16 +91,16 @@ USE_TZ = True
 # --- СТАТИЧЕСКИЕ ФАЙЛЫ (CSS, JS, БУТСТРАП) ---
 STATIC_URL = "static/"
 STATICFILES_DIRS = [
-    BASE_DIR / "css",
+    BASE_DIR / "static",
 ]
 
-# --- НАСТРОЙКА ПОЧТЫ (Вывод писем в консоль для разработки) ---
-MAILERS = {
+# --- НАСТРОЙКА ПОЧТЫ (Современный синтаксис Django 6.1) ---
+EMAILERS = {
     "default": {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
 }
 
-
+# --- МЕДИАФАЙЛЫ (ИЗОБРАЖЕНИЯ ТОВАРОВ И БЛОГА) ---
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'

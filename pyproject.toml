@@ -7,13 +7,38 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "django (>=6.1,<7.0)"
-]
+dynamic = ["dependencies"] # Позволяет Poetry управлять зависимостями
+
+[tool.poetry]
+package-mode = false # Отключаем упаковку в пакет для Django-приложения
+
+[tool.poetry.dependencies]
+django = "^6.1"
+psycopg2-binary = "^2.9.13"
+pillow = "^12.3.0"
+python-dotenv = "^1.2.3"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.black]
+line-length = 120
+target-version = ['py312']
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | migrations
+)/
+'''
 
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = ["migrations", ".venv", ".git"]
 
+[tool.flake8]
+max-line-length = 120
+exclude = [".git", "__pycache__", "migrations", ".venv"]
+ignore = ["E203", "W503"]

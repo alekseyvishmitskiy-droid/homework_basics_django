@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 600px;">
+    <h2>{% if object %}Редактирование статьи{% else %}Новая публикация{% endif %}</h2>
+
+    <form method="post" enctype="multipart/form-data" class="mt-4 shadow-sm p-4 bg-white rounded">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a href="{% if object %}{% url 'blog:detail' object.pk %}{% else %}{% url 'blog:list' %}{% endif %}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
