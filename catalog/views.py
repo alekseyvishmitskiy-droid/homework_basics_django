@@ -1,9 +1,8 @@
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, ListView, TemplateView
+from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView, DeleteView
 
 from catalog.forms import ProductForm
 from catalog.models import Product
-
 
 
 class ProductListView(ListView):
@@ -15,7 +14,6 @@ class ProductListView(ListView):
     def get_queryset(self):
         queryset = super().get_queryset().order_by("-id")
 
-
         latest_products = queryset[:5]
         print("\n--- ПОСЛЕДНИЕ 5 ПРОДУКТОВ В БАЗЕ ДАННЫХ (CBV) ---")
         for product in latest_products:
@@ -25,18 +23,32 @@ class ProductListView(ListView):
         return queryset
 
 
-
 class ProductDetailView(DetailView):
     model = Product
     template_name = "catalog/product_detail.html"
     context_object_name = "product"
 
 
-
 class ProductCreateView(CreateView):
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_form.html"
+    success_url = reverse_lazy("catalog:home")
+
+
+
+class ProductUpdateView(UpdateView):
+    """Редактирование продукта. Использует ту же форму и шаблон, что и CreateView"""
+    model = Product
+    form_class = ProductForm
+    template_name = "catalog/product_form.html"
+    success_url = reverse_lazy("catalog:home")
+
+
+class ProductDeleteView(DeleteView):
+    """Удаление продукта."""
+    model = Product
+    template_name = "catalog/product_confirm_delete.html"
     success_url = reverse_lazy("catalog:home")
 
 
@@ -52,13 +64,11 @@ class ContactsTemplateView(TemplateView):
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
 
-
         name = request.POST.get("name")
         phone = request.POST.get("phone")
         message = request.POST.get("message")
 
         print(f"Новая заявка! Имя: {name}, Телефон: {phone}, Сообщение: {message}")
-
 
         context["success_message"] = "Данные успешно отправлены!"
 
