@@ -16,7 +16,7 @@ load_dotenv(BASE_DIR / '.env')
 
 # --- СЕКРЕТНЫЕ НАСТРОЙКИ (Берутся строго из .env) ---
 SECRET_KEY = os.environ.get("SECRET_KEY")
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 # --- ОПРЕДЕЛЕНИЕ ПРИЛОЖЕНИЙ ---
@@ -29,7 +29,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "catalog",
     "blog",
+    "users",
 ]
+
+
+AUTH_USER_MODEL = "users.User"
 
 # --- ПРОМЕЖУТОЧНОЕ ПО (MIDDLEWARE) ---
 MIDDLEWARE = [
@@ -91,7 +95,7 @@ USE_TZ = True
 # --- СТАТИЧЕСКИЕ ФАЙЛЫ (CSS, JS, БУТСТРАП) ---
 STATIC_URL = "static/"
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    os.path.join(BASE_DIR, "static"),
 ]
 
 # --- НАСТРОЙКА ПОЧТЫ (Современный синтаксис Django 6.1) ---
@@ -104,3 +108,10 @@ EMAILERS = {
 # --- МЕДИАФАЙЛЫ (ИЗОБРАЖЕНИЯ ТОВАРОВ И БЛОГА) ---
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+LOGIN_REDIRECT_URL = 'users:profile'
+
+
+LOGOUT_REDIRECT_URL = 'catalog:home'
+
