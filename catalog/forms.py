@@ -56,3 +56,16 @@ class ProductForm(forms.ModelForm):
             if hasattr(image, 'content_type') and image.content_type not in valid_types:
                 raise ValidationError('Допускаются только изображения в формате JPEG или PNG.')
         return image
+
+
+class ProductModeratorForm(forms.ModelForm):
+    """Форма для изменения статуса публикации модератором продуктов."""
+    class Meta:
+        model = Product
+        fields = ("is_published",)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = 'form-check-input'
