@@ -24,8 +24,26 @@
                     <h5 class="fw-bold">Описание товара</h5>
                     <p class="lead text-secondary" style="white-space: pre-wrap;">{{ product.description }}</p>
 
-                    <div class="mt-4 pt-3 border-top">
+
+                    <p class="text-muted small mt-3">Владелец: {{ product.owner|default:"Не указан" }}</p>
+
+                    <div class="mt-4 pt-3 border-top d-flex flex-wrap gap-2">
                         <a href="{% url 'catalog:home' %}" class="btn btn-outline-primary">Вернуться в каталог</a>
+
+
+                        {% if user == product.owner %}
+                            <a href="{% url 'catalog:product_update' product.pk %}" class="btn btn-warning">Редактировать</a>
+                        {% endif %}
+
+
+                        {% if perms.catalog.can_unpublish_product %}
+                            <a href="{% url 'catalog:product_moderate' product.pk %}" class="btn btn-secondary">Модерация статуса</a>
+                        {% endif %}
+
+
+                        {% if user == product.owner or perms.catalog.delete_product %}
+                            <a href="{% url 'catalog:product_delete' product.pk %}" class="btn btn-danger">Удалить</a>
+                        {% endif %}
                     </div>
                 </div>
             </div>

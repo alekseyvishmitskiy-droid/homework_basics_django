@@ -23,7 +23,6 @@
                                 {{ product.price }} <small class="text-muted">₽</small>
                             </h1>
 
-
                             {% if product.category %}
                                 <span class="badge bg-light text-dark border mb-3">{{ product.category }}</span>
                             {% endif %}
@@ -37,6 +36,20 @@
                             <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-lg btn-primary">
                                 Подробнее
                             </a>
+
+
+                            {% if user == product.owner %}
+                                <a href="{% url 'catalog:product_update' product.pk %}" class="btn btn-sm btn-outline-warning">
+                                    Редактировать
+                                </a>
+                            {% endif %}
+
+
+                            {% if user == product.owner or perms.catalog.delete_product %}
+                                <a href="{% url 'catalog:product_delete' product.pk %}" class="btn btn-sm btn-outline-danger">
+                                    Удалить
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
