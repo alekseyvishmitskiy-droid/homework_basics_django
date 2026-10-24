@@ -92,10 +92,12 @@ TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
 USE_TZ = True
 
-# --- СТАТИЧЕСКИЕ ФАЙЛЫ (CSS, JS, БУТСТРАП) ---
+
 STATIC_URL = "static/"
+
+
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
+    os.path.join(BASE_DIR, "css"),
 ]
 
 # --- НАСТРОЙКА ПОЧТЫ (Современный синтаксис Django 6.1) ---
@@ -109,9 +111,19 @@ EMAILERS = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
+# --- НАСТРОЙКИ АВТОРИЗАЦИИ И РЕДИРЕКТОВ ---
 LOGIN_REDIRECT_URL = 'users:profile'
-
-
 LOGOUT_REDIRECT_URL = 'catalog:home'
 
+# --- НАСТРОЙКИ КЕШИРОВАНИЯ (БРОКЕР REDIS) ---
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+CACHE_TIMEOUT = 300
