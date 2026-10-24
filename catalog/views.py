@@ -3,10 +3,11 @@ from django.views.generic import CreateView, DetailView, ListView, TemplateView,
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
 from catalog.forms import ProductForm, ProductModeratorForm
-from catalog.models import Product
-
+from catalog.models import Product, Category
+from catalog.services import get_products_by_category, get_all_published_products
 
 class ProductListView(ListView):
     model = Product
@@ -15,28 +16,19 @@ class ProductListView(ListView):
     paginate_by = 3
 
     def get_queryset(self):
-        queryset = super().get_queryset().order_by("-id")
-
-
         if self.request.user.is_authenticated:
+            queryset = Product.objects.all().order_by("-id")
             if self.request.user.has_perm('catalog.can_unpublish_product'):
                 pass
             else:
                 queryset = queryset.filter(Q(is_published=True) | Q(owner=self.request.user))
-        else:
-            queryset = queryset.filter(is_published=True)
+            return queryset
 
 
-        latest_products = queryset[:5]
-        print("\n--- ПОСЛЕДНИЕ 5 ПРОДУКТОВ В БАЗЕ ДАННЫХ (CBV) ---")
-        for product in latest_products:
-            print(f"ID: {product.id} | Название: {product.name} | Цена: {product.price}")
-        print("-------------------------------------------------\n")
-
-        return queryset
+        return get_all_published_products()
 
 
-class ProductDetailView(DetailView):
+class ProductDetailView(LoginRequiredMixin, DetailView):
     model = Product
     template_name = "catalog/product_detail.html"
     context_object_name = "product"
@@ -44,9 +36,6 @@ class ProductDetailView(DetailView):
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
         if not obj.is_published:
-            if not self.request.user.is_authenticated:
-                raise PermissionDenied("Этот продукт еще не прошел модерацию.")
-
             is_owner = obj.owner == self.request.user
             is_moderator = self.request.user.has_perm('catalog.can_unpublish_product')
 
@@ -56,7 +45,6 @@ class ProductDetailView(DetailView):
 
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
-    """Создание продукта с автоматической привязкой владельца."""
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_form.html"
@@ -68,7 +56,6 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
 
 
 class ProductUpdateView(LoginRequiredMixin, UpdateView):
-    """Редактирование продукта. Доступно только владельцу."""
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_form.html"
@@ -76,30 +63,23 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
-
-
         if obj.owner != self.request.user:
             raise PermissionDenied("Вы не являетесь владельцем этого продукта, редактирование запрещено.")
-
         return obj
 
 
 class ProductDeleteView(LoginRequiredMixin, DeleteView):
-    """Удаление продукта. Доступно владельцу и модераторам."""
     model = Product
     template_name = "catalog/product_confirm_delete.html"
     success_url = reverse_lazy("catalog:home")
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
-
-
         is_owner = obj.owner == self.request.user
         is_moderator = self.request.user.has_perm('catalog.delete_product')
 
         if not (is_owner or is_moderator):
-            raise PermissionDenied("У вас нет прав на删除 этого продукта.")
-
+            raise PermissionDenied("У вас нет прав на удаление этого продукта.")
         return obj
 
 
@@ -113,22 +93,33 @@ class ContactsTemplateView(TemplateView):
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
-
         name = request.POST.get("name")
         phone = request.POST.get("phone")
         message = request.POST.get("message")
 
-        print(f"Новая заявка! Имя: {name}, Телефон: {phone}, Сообщение: {message}")
-
         context["success_message"] = "Данные успешно отправлены!"
-
         return self.render_to_response(context)
 
 
 class ProductModerationView(PermissionRequiredMixin, UpdateView):
-    """Контроллер для модератора для изменения статуса публикации."""
     model = Product
     form_class = ProductModeratorForm
     template_name = "catalog/product_form.html"
     permission_required = "catalog.can_unpublish_product"
     success_url = reverse_lazy("catalog:home")
+
+
+class CategoryProductListView(ListView):
+    """Отображение списка продуктов для конкретной категории с использованием низкоуровневого кэша."""
+    model = Product
+    template_name = "catalog/category_products.html"
+    context_object_name = "products"
+
+    def get_queryset(self):
+        self.category_pk = self.kwargs.get('pk')
+        return get_products_by_category(self.category_pk)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = get_object_or_404(Category, pk=self.category_pk)
+        return context
